@@ -5,9 +5,11 @@
 #include <sys/stat.h>
 
 int shell_file_exists(char *file_path) {
-  // use the stat() system call to check if a file exists
+    struct stat checkedFile;
+    return stat(file_path, &checkedFile);;
 }
 
 int main (int argc, char *argv[]) {
-
+    char* path = "/usr/bin/aa";
+    printf("%d", shell_file_exists(path));
 }
