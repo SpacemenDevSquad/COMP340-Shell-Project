@@ -4,6 +4,11 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdbool.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096   // Define a reasonable size if not available
+#endif
 
 
 int shell_change_dir(char *dir_path) {
@@ -27,12 +32,31 @@ int shell_execute(char *file_path, char **argv) {
 }
 
 
+
 int main (int argc, char *argv[]) {
    //run the shell
    
+   bool exit = false;
+   while (!exit) {
+     
+     //prints current working directory and waits for user input
+     char cwd[PATH_MAX];
+     getcwd(cwd, sizeof(cwd));
+     printf("%s$ ",cwd);
+     char args[250];
+     scanf("%249s", args);
+     if(strcmp(args,"exit")==0){
+       exit = true;
+       //TODO: free any allocated memory
+     }
+     
+     //TODO: parse user prompt
+     
+   
+   
+   }
+   
    /*
-   while (!exit)
-   {
 	1. display prompt and wait for user input
 		// generate some prompt 
 		// e.g. username@hostname:~/david$ ping 
@@ -49,6 +73,8 @@ int main (int argc, char *argv[]) {
 			execute the command using shell_execute()
 		else
 			report an error message
-    }
+   
    */
+    
+   
 }
