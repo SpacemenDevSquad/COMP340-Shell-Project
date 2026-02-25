@@ -85,20 +85,39 @@ int main (int argc, char *argv[]) {
    bool exit = false;
    while (!exit) {
      
-     //prints current working directory and waits for user input
-     char cwd[PATH_MAX];
-     getcwd(cwd, sizeof(cwd));
-     printf("%s$ ",cwd);
-     char args[250];
-     scanf("%249s", args);
-     if(strcmp(args,"exit")==0){
-       exit = true;
-       //TODO: free any allocated memory
-     }
+    //prints current working directory and waits for user input
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    printf("%s$ ",cwd);
+    char bufferArray[250];
+    fgets(bufferArray, 249, stdin);
+
+    // Parse the user's input
+    printf("Hello. You have entered into the terminal: (%s)\n", bufferArray);
+    char *enteredCommand;
+    char *theeUncleansed = bufferArray;
+    char *args = strsep(&theeUncleansed, "\n");
+    enteredCommand = strsep(&args, " ");
+
+    printf("Detected command: (%s)\n", enteredCommand);
+    printf("Detected arguments: (%s)\n", args);
+
+
+    // Actions based on user input
+
+    if(strcmp(enteredCommand,"exit")==0){
+      exit = true;
+      //TODO: free any allocated memory
+    }
+    
+    if(strcmp(enteredCommand,"cd")==0) {
+      shell_change_dir(args);
+    }
      
-     //TODO: parse user prompt
-     
-   
+    printf("%d\n", shell_file_exists(enteredCommand));
+    if(shell_file_exists(enteredCommand) == 0) {
+      shell_execute(enteredCommand, &args);
+    }
    
    }
    
