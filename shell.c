@@ -6,29 +6,75 @@
 #include <errno.h>
 #include <stdbool.h>
 
+#include <sys/types.h>
+#include <dirent.h>
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096   // Define a reasonable size if not available
 #endif
 
 
 int shell_change_dir(char *dir_path) {
-  // use the chdir() system call to change the current directory
+  int change = chdir(dir_path);
+  if(change != 0){
+    printf("%s\n",strerror(errno));
+    return 1;
+  }
+  return 0;
 }
 
 
 int shell_file_exists(char *file_path) {
-  // use the stat() system call to check if a file exists
+    struct stat checkedFile;
+    return stat(file_path, &checkedFile);;
 }
 
 
 int shell_find_file(char *file_name, char *file_path, char file_path_size) {
-  // traverse the PATH environment variable to find the absolute path of a file/command
+  char *path = strdup(getenv("PATH"));    //list of directories in the PATH
+  char *change = path;                    //copy of the pointer to the string that will change
+  char *dir_name;
+  
+  while((dir_name = strsep(&change, ":")) != NULL){    //iterate through the path string, with ":" as a delimiter
+    DIR *curr_dir = opendir(dir_name);                 //directory stream for the current path directory
+    if(curr_dir == NULL){
+      printf("could not open directory from %s\n", dir_name);
+      return 1;
+    }
+    
+    struct dirent *dir_file;
+    while((dir_file = readdir(curr_dir)) != NULL){     //iterating through the files in the current directory
+      if(strcmp(file_name,dir_file->d_name) == 0){      //if the current entry is the file being looked for
+      
+        int res = snprintf(file_path, (size_t)(file_path_size),"%s/%s",dir_name,file_name);  //adding to the buffer
+        //if(res >= file_path_size){
+        //  printf("truncated\n");
+        //}
+        //printf("file: %s\n",file_path);
+        
+        return 0;
+      }
+    }
+    closedir(curr_dir);
+  }
+  
+  printf("%s does not exist on the PATH\n",file_name);
+  free(path);
+  return -1;
 }
 
 
 int shell_execute(char *file_path, char **argv) {
   // execute the file with the command line arguments
   // use the fork() and exec() system call 
+
+  int pid = fork();
+  if (pid == 0) {
+    execv(file_path, argv);
+    exit(-1);
+  }
+  wait(NULL);
+  return 0;
 }
 
 
