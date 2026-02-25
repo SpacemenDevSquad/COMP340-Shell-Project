@@ -8,6 +8,7 @@
 
 #include <sys/types.h>
 #include <dirent.h>
+#include <sys/wait.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096   // Define a reasonable size if not available
@@ -98,9 +99,30 @@ int main (int argc, char *argv[]) {
     char *theeUncleansed = bufferArray;
     char *args = strsep(&theeUncleansed, "\n");
     enteredCommand = strsep(&args, " ");
+    char *cdArg = args;
+    
+    //new:
+    char *argv[50]; //array of arg strings
+    //split into args:
+    int arg_ct = 0;
+    argv[arg_ct++] = enteredCommand;
+    char *token;
+    while(args != NULL && arg_ct < 49){
+      token = strsep(&args, " ");
+      if(token == NULL){  //if there's nothing else in the string
+        break;
+      }
+      if(*token == '\0') continue; //skip empty
+      argv[arg_ct++] = token;
+    }
+    argv[arg_ct] = NULL; //null terminate
+    
+    
 
     printf("Detected command: (%s)\n", enteredCommand);
-    printf("Detected arguments: (%s)\n", args);
+    //printf("Detected arguments: (%s)\n", args);
+    printf("first arg: (%s)\n", argv[0]);
+    
 
 
     // Actions based on user input
@@ -108,18 +130,51 @@ int main (int argc, char *argv[]) {
     if(strcmp(enteredCommand,"exit")==0){
       exit = true;
       //TODO: free any allocated memory
-    }
+      
+    }else{
     
     if(strcmp(enteredCommand,"cd")==0) {
-      shell_change_dir(args);
+      printf("directory: %s\n", cdArg);
+      shell_change_dir(cdArg);
+      
+      
+    }else if(shell_file_exists(enteredCommand) == 0) { 
+      
+      //check if it exists in the local filesystem
+      printf("in filesystem\n");
+      char cmd[50];
+      int res = shell_find_file(enteredCommand, cmd, 50);
+      if(res == 0){ //if it can find on the path
+        printf("path: %s\n",cmd);
+        shell_execute(cmd, argv);
+      }
+      //shell_execute(enteredCommand, &args);
+    
+    }else{
+      
+      char cmd[50];
+      int res = shell_find_file(enteredCommand, cmd, 50);
+      if(res == 0){ //if it can find on the path
+        printf("in PATH: %s\n",cmd);  //test: firefox, gamemodelist
+        shell_execute(cmd, argv);
+      }
+
     }
+    
+    //printf("command location: %s\n",shell_find_file(enteredCommand));
      
-    printf("%d\n", shell_file_exists(enteredCommand));
-    if(shell_file_exists(enteredCommand) == 0) {
-      shell_execute(enteredCommand, &args);
-    }
+    //printf("%d\n", shell_file_exists(enteredCommand));
+    //if(shell_file_exists(enteredCommand) == 0) {
+    //  shell_execute(enteredCommand, &args);
+    //}
    
    }
+   }
+   
+   
+   
+   
+   
    
    /*
 	1. display prompt and wait for user input
