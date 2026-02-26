@@ -59,7 +59,6 @@ int shell_find_file(char *file_name, char *file_path, char file_path_size) {
     closedir(curr_dir);
   }
   
-  printf("%s does not exist on the PATH\n",file_name);
   free(path);
   return -1;
 }
@@ -94,7 +93,6 @@ int main (int argc, char *argv[]) {
     fgets(bufferArray, 249, stdin);
 
     // Parse the user's input
-    printf("Hello. You have entered into the terminal: (%s)\n", bufferArray);
     char *enteredCommand;
     char *theeUncleansed = bufferArray;
     char *args = strsep(&theeUncleansed, "\n");
@@ -119,60 +117,43 @@ int main (int argc, char *argv[]) {
     
     
 
-    printf("Detected command: (%s)\n", enteredCommand);
-    //printf("Detected arguments: (%s)\n", args);
-    printf("first arg: (%s)\n", argv[0]);
     
 
 
     // Actions based on user input
 
-    if(strcmp(enteredCommand,"exit")==0){
+    if(strcmp(enteredCommand,"exit")==0){   // exit
       exit = true;
-      //TODO: free any allocated memory
       
     }else{
     
-    if(strcmp(enteredCommand,"cd")==0) {
-      printf("directory: %s\n", cdArg);
+    if(strcmp(enteredCommand,"cd")==0) {    // cd
       shell_change_dir(cdArg);
       
       
-    }else if(shell_file_exists(enteredCommand) == 0) { 
-      
-      //check if it exists in the local filesystem
-      printf("in filesystem\n");
+    }else if(shell_file_exists(enteredCommand) == 0) {   // exists in local filesystem
       char cmd[50];
       int res = shell_find_file(enteredCommand, cmd, 50);
-      if(res == 0){ //if it can find on the path
-        printf("path: %s\n",cmd);
+      if(res == 0){
         shell_execute(cmd, argv);
+      }else if (res == -1){ //could be a path
+        shell_execute(enteredCommand, argv);
+        
       }
-      //shell_execute(enteredCommand, &args);
     
-    }else{
+    }else{    //exists in path
       
       char cmd[50];
       int res = shell_find_file(enteredCommand, cmd, 50);
-      if(res == 0){ //if it can find on the path
-        printf("in PATH: %s\n",cmd);  //test: firefox, gamemodelist
+      
+      if(res == 0){
         shell_execute(cmd, argv);
+      }else if (strcmp("", enteredCommand) != 0){
+        printf("%s command does not exist\n",enteredCommand);
       }
-
     }
-    
-    //printf("command location: %s\n",shell_find_file(enteredCommand));
-     
-    //printf("%d\n", shell_file_exists(enteredCommand));
-    //if(shell_file_exists(enteredCommand) == 0) {
-    //  shell_execute(enteredCommand, &args);
-    //}
-   
    }
-   }
-   
-   
-   
+  }
    
    
    
@@ -188,7 +169,7 @@ int main (int argc, char *argv[]) {
 	4. parse command line
 		if the specified command is “exit”, terminate the program taking care to release any allocated resources.
 		if the specified command is “cd”
-			change the current working directory to the specified directory path using shell_change_dir()
+			change the current working directory to the specified directory path using shell_change_dir().
 		if the command is specified using an absolute path (e.g. /usr/bin/ls), exists in the user’s PATH (e.g. ls) or exists in the current folder (e.g. ./hello_world)
 			execute the command using shell_execute()
 		else
