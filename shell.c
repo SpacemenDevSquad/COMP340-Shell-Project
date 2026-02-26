@@ -1,3 +1,19 @@
+
+
+/*
+  Author:  Peter Brumbach, Anna Hutchins
+  Course:  COMP 340, Operating Systems
+  Date:    25 February 2026
+  Description:   This file implements the
+                 Shell program
+  Compile with:  gcc shell.c -o shell
+  Run with:      ./shell
+
+*/
+
+
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,10 +27,13 @@
 #include <sys/wait.h>
 
 #ifndef PATH_MAX
-#define PATH_MAX 4096   // Define a reasonable size if not available
+#define PATH_MAX 4096
 #endif
 
 
+/*
+  Purpose: change directory function
+*/
 int shell_change_dir(char *dir_path) {
   int change = chdir(dir_path);
   if(change != 0){
@@ -25,12 +44,19 @@ int shell_change_dir(char *dir_path) {
 }
 
 
+/*
+  Purpose: checks if the file exists in the local file system
+*/
 int shell_file_exists(char *file_path) {
     struct stat checkedFile;
     return stat(file_path, &checkedFile);;
 }
 
 
+
+/*
+  Purpose: find the path of the file in the PATH variable
+*/
 int shell_find_file(char *file_name, char *file_path, char file_path_size) {
   char *path = strdup(getenv("PATH"));    //list of directories in the PATH
   char *change = path;                    //copy of the pointer to the string that will change
@@ -47,12 +73,7 @@ int shell_find_file(char *file_name, char *file_path, char file_path_size) {
     while((dir_file = readdir(curr_dir)) != NULL){     //iterating through the files in the current directory
       if(strcmp(file_name,dir_file->d_name) == 0){      //if the current entry is the file being looked for
       
-        int res = snprintf(file_path, (size_t)(file_path_size),"%s/%s",dir_name,file_name);  //adding to the buffer
-        //if(res >= file_path_size){
-        //  printf("truncated\n");
-        //}
-        //printf("file: %s\n",file_path);
-        
+        int res = snprintf(file_path, (size_t)(file_path_size),"%s/%s",dir_name,file_name);  
         return 0;
       }
     }
@@ -64,10 +85,11 @@ int shell_find_file(char *file_name, char *file_path, char file_path_size) {
 }
 
 
-int shell_execute(char *file_path, char **argv) {
-  // execute the file with the command line arguments
-  // use the fork() and exec() system call 
 
+/*
+  Purpose: execute the specified file from its path
+*/
+int shell_execute(char *file_path, char **argv) {
   int pid = fork();
   if (pid == 0) {
     execv(file_path, argv);
@@ -79,8 +101,11 @@ int shell_execute(char *file_path, char **argv) {
 
 
 
+
+/*
+  Purpose: run the shell
+*/
 int main (int argc, char *argv[]) {
-   //run the shell
    
    bool exit = false;
    while (!exit) {
@@ -155,27 +180,5 @@ int main (int argc, char *argv[]) {
    }
   }
    
-   
-   
-   /*
-	1. display prompt and wait for user input
-		// generate some prompt 
-		// e.g. username@hostname:~/david$ ping 
-	
-	2. filter out whitespace command 
-	
-	3. if command line contains non-whitespace characters
-	
-	4. parse command line
-		if the specified command is “exit”, terminate the program taking care to release any allocated resources.
-		if the specified command is “cd”
-			change the current working directory to the specified directory path using shell_change_dir().
-		if the command is specified using an absolute path (e.g. /usr/bin/ls), exists in the user’s PATH (e.g. ls) or exists in the current folder (e.g. ./hello_world)
-			execute the command using shell_execute()
-		else
-			report an error message
-   
-   */
-    
-   
+
 }
